@@ -1,0 +1,11 @@
+{
+  "name": "BatteryGram",
+  "author": "sadzorax",
+  "flags": ["debug", "_root"],
+  "api_version": 1,
+  "publish": {
+    "tags": ["battery", "telegram", "notification", "steam deck"],
+    "description": "Get Telegram notifications when your Steam Deck battery is low. Set a threshold, add your bot token and chat ID, then start monitoring.",
+    "image": "https://opengraph.githubassets.com/1/SteamDeckHomebrew/PluginLoader"
+  }
+}
