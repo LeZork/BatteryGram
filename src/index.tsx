@@ -12,6 +12,7 @@ import {
   FaStop,
   FaSave,
   FaVial,
+  FaTelegram,
 } from 'react-icons/fa';
 import { useState, useEffect, useCallback } from 'react';
 import { definePlugin, call, toaster } from '@decky/api';
@@ -59,6 +60,7 @@ const texts = {
   start: 'Запустить',
   stop: 'Остановить',
   test: 'Тест',
+  contact: 'Связь с разработчиком',
 };
 
 function BatteryTelegramPanel() {
@@ -292,6 +294,44 @@ function BatteryTelegramPanel() {
         </PanelSectionRow>
       </PanelSection>
 
+      {/* Блок с контактами разработчика */}
+      <div style={{ 
+        marginTop: '20px', 
+        padding: '15px', 
+        background: 'rgba(38, 165, 228, 0.1)', 
+        borderRadius: '10px',
+        border: '1px solid rgba(38, 165, 228, 0.3)',
+        textAlign: 'center'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '8px' }}>
+          <FaTelegram size={20} color="#26A5E4" />
+          <span style={{ fontWeight: 'bold', color: '#26A5E4' }}>{texts.contact}</span>
+        </div>
+        <a 
+          href="https://t.me/sadzorax" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          style={{
+            display: 'inline-block',
+            padding: '8px 16px',
+            background: '#26A5E4',
+            color: 'white',
+            textDecoration: 'none',
+            borderRadius: '20px',
+            fontWeight: 'bold',
+            fontSize: '14px',
+            transition: 'opacity 0.2s'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
+          onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+        >
+          @sadzorax
+        </a>
+        <div style={{ fontSize: '11px', color: '#888', marginTop: '8px' }}>
+          По вопросам и предложениям
+        </div>
+      </div>
+
       {settingsPath && (
         <PanelSection>
           <PanelSectionRow>
@@ -301,6 +341,7 @@ function BatteryTelegramPanel() {
           </PanelSectionRow>
         </PanelSection>
       )}
+
     </div>
   );
 }
