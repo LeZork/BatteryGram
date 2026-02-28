@@ -58,7 +58,8 @@ class BatteryMonitor:
         self.monitoring: bool = False
         self.thread: Optional[threading.Thread] = None
         self.notified_levels: Set[int] = set()
-        # Не ищем пути в __init__, будем искать динамически
+        self.notified_charged: Set[int] = set()
+        self.last_charging_state: Optional[bool] = None
 
     def _get_battery_paths(self) -> Tuple[Optional[str], Optional[str]]:
         """Получить пути к батарее (динамически при каждом запросе)"""
@@ -223,7 +224,30 @@ class BatteryMonitor:
 
                 if level is not None:
                     logger.debug(f"Проверка батареи: {level}%, зарядка={charging}")
+
+                    # Отслеживаем изменение состояния зарядки
+                    if self.last_charging_state is not None and charging != self.last_charging_state:
+                        status = "подключено 🔌" if charging else "отключено ⚡"
+                        self.send_telegram(f"🔋 Питание {status}")
                     
+                        # Если зарядка отключена, сбрасываем уведомления о полном заряде
+                        if not charging:
+                            self.notified_charged.clear()
+
+                    self.last_charging_state = charging
+
+                    # Уведомление о полном заряде (выше 85%)
+                    if charging and level >= 85 and level not in self.notified_charged:
+                        message = (
+                            "✅ <b>Steam Deck полностью заряжен!</b>\n\n"
+                            f"🔋 Уровень: {level}%\n"
+                            "⚡ Можно отключать от сети"
+                        )
+                        if self.send_telegram(message):
+                            self.notified_charged.add(level)
+                            logger.info(f"Уведомление о полном заряде отправлено ({level}%)")
+
+                    # Уведомление о низком заряде
                     if not charging and level <= self.threshold:
                         if level not in self.notified_levels:
                             message = (
@@ -234,9 +258,14 @@ class BatteryMonitor:
                             )
                             if self.send_telegram(message):
                                 self.notified_levels.add(level)
-                                logger.info(f"Уведомление отправлено для {level}%")
+                                logger.info(f"Уведомление о низком заряде отправлено ({level}%)")
                     else:
                         self.notified_levels.clear()
+
+                    # Сбрасываем notified_charged когда заряд упал ниже 85% и не заряжается
+                    if not charging and level <= 85:
+                        self.notified_charged.clear()
+
                 else:
                     logger.debug("Уровень заряда не определен, пропускаем проверку")
 
@@ -262,6 +291,8 @@ class BatteryMonitor:
 
         self.monitoring = True
         self.notified_levels.clear()
+        self.notified_charged.clear()
+        self.last_charging_state = self.is_charging()
         self.thread = threading.Thread(target=self.monitor_loop, daemon=True)
         self.thread.start()
         logger.info("Мониторинг батареи запущен")
