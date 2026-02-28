@@ -56,7 +56,9 @@ function IconBase(props) {
 }
 
 // THIS FILE IS AUTO GENERATED
-function FaBatteryHalf (props) {
+function FaTelegram (props) {
+  return GenIcon({"attr":{"viewBox":"0 0 496 512"},"child":[{"tag":"path","attr":{"d":"M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm121.8 169.9l-40.7 191.8c-3 13.6-11.1 16.9-22.4 10.5l-62-45.7-29.9 28.8c-3.3 3.3-6.1 6.1-12.5 6.1l4.4-63.1 114.9-103.8c5-4.4-1.1-6.9-7.7-2.5l-142 89.4-61.2-19.1c-13.3-4.2-13.6-13.3 2.8-19.7l239.1-92.2c11.1-4 20.8 2.7 17.2 19.5z"},"child":[]}]})(props);
+}function FaBatteryHalf (props) {
   return GenIcon({"attr":{"viewBox":"0 0 640 512"},"child":[{"tag":"path","attr":{"d":"M544 160v64h32v64h-32v64H64V160h480m16-64H48c-26.51 0-48 21.49-48 48v224c0 26.51 21.49 48 48 48h512c26.51 0 48-21.49 48-48v-16h8c13.255 0 24-10.745 24-24V184c0-13.255-10.745-24-24-24h-8v-16c0-26.51-21.49-48-48-48zm-240 96H96v128h224V192z"},"child":[]}]})(props);
 }function FaPlay (props) {
   return GenIcon({"attr":{"viewBox":"0 0 448 512"},"child":[{"tag":"path","attr":{"d":"M424.4 214.7L72.4 6.6C43.8-10.3 0 6.1 0 47.9V464c0 37.5 40.7 60.1 72.4 41.3l352-208c31.4-18.5 31.5-64.1 0-82.6z"},"child":[]}]})(props);
@@ -122,6 +124,7 @@ const texts = {
     start: 'Запустить',
     stop: 'Остановить',
     test: 'Тест',
+    contact: 'Связь с разработчиком',
 };
 function BatteryTelegramPanel() {
     const [chatId, setChatId] = SP_REACT.useState('');
@@ -161,6 +164,7 @@ function BatteryTelegramPanel() {
                 if (typeof cfg === 'object') {
                     setChatId(String(cfg.chat_id ?? ''));
                     setThreshold(Math.max(THRESHOLD_MIN, Math.min(THRESHOLD_MAX, Number(cfg.threshold) ?? 20)));
+                    setIsMonitoring(Boolean(cfg.monitoring));
                 }
             }
             catch (e) {
@@ -187,7 +191,7 @@ function BatteryTelegramPanel() {
         try {
             let success = false;
             try {
-                success = await call('save_config', { chat_id: chatId.trim(), threshold, language: 'ru' });
+                success = await call('save_config', { chat_id: chatId.trim(), threshold, language: 'ru', monitoring: isMonitoring });
             }
             catch (_) {
                 success = await call('save_config', chatId.trim(), threshold, 'ru');
@@ -258,7 +262,24 @@ function BatteryTelegramPanel() {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
-                        }, children: [SP_JSX.jsxs("div", { style: { display: 'flex', alignItems: 'center', gap: '10px' }, children: [SP_JSX.jsx(FaBatteryHalf, { size: 24, color: batteryLevel !== null && batteryLevel < threshold ? '#ff4444' : '#44ff44' }), SP_JSX.jsx("span", { style: { fontSize: '24px', fontWeight: 'bold' }, children: batteryLevel !== null ? `${batteryLevel}%` : '--%' })] }), SP_JSX.jsxs("div", { style: { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }, children: [isMonitoring && (SP_JSX.jsxs("span", { style: { color: '#44ff44', fontSize: '12px' }, children: ["\u25CF ", texts.monitoring] })), SP_JSX.jsx("span", { style: { color: isCharging ? '#44ff44' : '#888' }, children: isCharging ? `⚡ ${texts.charging}` : `🔋 ${texts.discharging}` })] })] }) }) }), SP_JSX.jsx(DFL.PanelSection, { title: texts.telegramSettings, children: SP_JSX.jsxs("div", { style: { padding: '0 0 10px 0' }, children: [SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsx(DFL.TextField, { label: texts.chatId, value: chatId, onChange: (e) => setChatId(e.target.value), description: SP_JSX.jsxs(SP_JSX.Fragment, { children: [texts.chatIdHintFrom, ' ', SP_JSX.jsx("a", { href: "https://t.me/userinfobot", target: "_blank", rel: "noopener noreferrer", style: { color: '#26A5E4' }, children: "@userinfobot" }), texts.chatIdKeyboardHint] }), mustBeNumeric: true }) }), SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsx(DFL.SliderField, { label: texts.lowBatteryThreshold, value: threshold, min: THRESHOLD_MIN, max: THRESHOLD_MAX, step: 5, onChange: (v) => setThreshold(v), description: `${texts.notifyWhen} ${threshold}%`, showValue: true }) })] }) }), SP_JSX.jsx(DFL.PanelSection, { title: texts.controls, children: SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsxs("div", { style: { display: 'flex', gap: '10px', flexWrap: 'wrap' }, children: [SP_JSX.jsx(DFL.ButtonItem, { layout: "inline", onClick: saveConfig, disabled: isLoading, children: SP_JSX.jsxs("span", { style: { display: 'flex', alignItems: 'center', gap: '8px' }, children: [SP_JSX.jsx(FaSave, {}), texts.save] }) }), SP_JSX.jsx(DFL.ButtonItem, { layout: "inline", onClick: toggleMonitoring, disabled: isLoading || !hasCredentials, children: SP_JSX.jsxs("span", { style: { display: 'flex', alignItems: 'center', gap: '8px' }, children: [isMonitoring ? SP_JSX.jsx(FaStop, {}) : SP_JSX.jsx(FaPlay, {}), isMonitoring ? texts.stop : texts.start] }) }), SP_JSX.jsx(DFL.ButtonItem, { layout: "inline", onClick: testTelegram, disabled: isLoading || !hasCredentials, children: SP_JSX.jsxs("span", { style: { display: 'flex', alignItems: 'center', gap: '8px' }, children: [SP_JSX.jsx(FaVial, {}), texts.test] }) })] }) }) }), settingsPath && (SP_JSX.jsx(DFL.PanelSection, { children: SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsxs("div", { style: { fontSize: '11px', color: '#666', wordBreak: 'break-all' }, children: [texts.settingsFile, " ", settingsPath] }) }) }))] }));
+                        }, children: [SP_JSX.jsxs("div", { style: { display: 'flex', alignItems: 'center', gap: '10px' }, children: [SP_JSX.jsx(FaBatteryHalf, { size: 24, color: batteryLevel !== null && batteryLevel < threshold ? '#ff4444' : '#44ff44' }), SP_JSX.jsx("span", { style: { fontSize: '24px', fontWeight: 'bold' }, children: batteryLevel !== null ? `${batteryLevel}%` : '--%' })] }), SP_JSX.jsxs("div", { style: { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }, children: [isMonitoring && (SP_JSX.jsxs("span", { style: { color: '#44ff44', fontSize: '12px' }, children: ["\u25CF ", texts.monitoring] })), SP_JSX.jsx("span", { style: { color: isCharging ? '#44ff44' : '#888' }, children: isCharging ? `⚡ ${texts.charging}` : `🔋 ${texts.discharging}` })] })] }) }) }), SP_JSX.jsx(DFL.PanelSection, { title: texts.telegramSettings, children: SP_JSX.jsxs("div", { style: { padding: '0 0 10px 0' }, children: [SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsx(DFL.TextField, { label: texts.chatId, value: chatId, onChange: (e) => setChatId(e.target.value), description: SP_JSX.jsxs(SP_JSX.Fragment, { children: [texts.chatIdHintFrom, ' ', SP_JSX.jsx("a", { href: "https://t.me/userinfobot", target: "_blank", rel: "noopener noreferrer", style: { color: '#26A5E4' }, children: "@userinfobot" }), texts.chatIdKeyboardHint] }), mustBeNumeric: true }) }), SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsx(DFL.SliderField, { label: texts.lowBatteryThreshold, value: threshold, min: THRESHOLD_MIN, max: THRESHOLD_MAX, step: 5, onChange: (v) => setThreshold(v), description: `${texts.notifyWhen} ${threshold}%`, showValue: true }) })] }) }), SP_JSX.jsx(DFL.PanelSection, { title: texts.controls, children: SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsxs("div", { style: { display: 'flex', gap: '10px', flexWrap: 'wrap' }, children: [SP_JSX.jsx(DFL.ButtonItem, { layout: "inline", onClick: saveConfig, disabled: isLoading, children: SP_JSX.jsxs("span", { style: { display: 'flex', alignItems: 'center', gap: '8px' }, children: [SP_JSX.jsx(FaSave, {}), texts.save] }) }), SP_JSX.jsx(DFL.ButtonItem, { layout: "inline", onClick: toggleMonitoring, disabled: isLoading || !hasCredentials, children: SP_JSX.jsxs("span", { style: { display: 'flex', alignItems: 'center', gap: '8px' }, children: [isMonitoring ? SP_JSX.jsx(FaStop, {}) : SP_JSX.jsx(FaPlay, {}), isMonitoring ? texts.stop : texts.start] }) }), SP_JSX.jsx(DFL.ButtonItem, { layout: "inline", onClick: testTelegram, disabled: isLoading || !hasCredentials, children: SP_JSX.jsxs("span", { style: { display: 'flex', alignItems: 'center', gap: '8px' }, children: [SP_JSX.jsx(FaVial, {}), texts.test] }) })] }) }) }), SP_JSX.jsxs("div", { style: {
+                    marginTop: '20px',
+                    padding: '15px',
+                    background: 'rgba(38, 165, 228, 0.1)',
+                    borderRadius: '10px',
+                    border: '1px solid rgba(38, 165, 228, 0.3)',
+                    textAlign: 'center'
+                }, children: [SP_JSX.jsxs("div", { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '8px' }, children: [SP_JSX.jsx(FaTelegram, { size: 20, color: "#26A5E4" }), SP_JSX.jsx("span", { style: { fontWeight: 'bold', color: '#26A5E4' }, children: texts.contact })] }), SP_JSX.jsx("a", { href: "https://t.me/sadzorax", target: "_blank", rel: "noopener noreferrer", style: {
+                            display: 'inline-block',
+                            padding: '8px 16px',
+                            background: '#26A5E4',
+                            color: 'white',
+                            textDecoration: 'none',
+                            borderRadius: '20px',
+                            fontWeight: 'bold',
+                            fontSize: '14px',
+                            transition: 'opacity 0.2s'
+                        }, onMouseEnter: (e) => e.currentTarget.style.opacity = '0.8', onMouseLeave: (e) => e.currentTarget.style.opacity = '1', children: "@sadzorax" }), SP_JSX.jsx("div", { style: { fontSize: '11px', color: '#888', marginTop: '8px' }, children: "\u041F\u043E \u0432\u043E\u043F\u0440\u043E\u0441\u0430\u043C \u0438 \u043F\u0440\u0435\u0434\u043B\u043E\u0436\u0435\u043D\u0438\u044F\u043C" })] }), settingsPath && (SP_JSX.jsx(DFL.PanelSection, { children: SP_JSX.jsx(DFL.PanelSectionRow, { children: SP_JSX.jsxs("div", { style: { fontSize: '11px', color: '#666', wordBreak: 'break-all' }, children: [texts.settingsFile, " ", settingsPath] }) }) }))] }));
 }
 var index = definePlugin(() => ({
     name: 'BatteryGram',
