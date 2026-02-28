@@ -64,11 +64,24 @@ class BatteryMonitor:
         """Получить пути к батарее (динамически при каждом запросе)"""
         return _find_battery_paths()
 
-    def set_config(self, chat_id: str, threshold: int) -> bool:
+    def set_config(self, chat_id: str, threshold: int, monitoring: Optional[bool] = None) -> bool:
         """Обновить конфигурацию (токен общий для всех)."""
         self.chat_id = (chat_id or "").strip()
         self.threshold = max(5, min(50, int(threshold)))
         logger.info(f"Конфигурация обновлена: порог={self.threshold}%")
+
+        # Применяем состояние мониторинга, если оно передано
+        if monitoring is not None:
+            if monitoring and not self.monitoring:
+                # Нужно запустить мониторинг
+                if self.chat_id:
+                    self.start_monitoring()
+                else:
+                    logger.warning("Не могу запустить мониторинг: не установлен chat_id")
+            elif not monitoring and self.monitoring:
+                # Нужно остановить мониторинг
+                self.stop_monitoring()
+                
         return True
 
     def send_telegram(self, message: str) -> bool:

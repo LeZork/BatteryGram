@@ -85,8 +85,9 @@ class Plugin:
             if settings:
                 chat_id = settings.get("chat_id", "")
                 threshold = min(THRESHOLD_MAX, max(THRESHOLD_MIN, settings.get("threshold", 20)))
-                self.battery_monitor.set_config(chat_id, threshold)
-                logger.info(f"Загружены настройки: порог={threshold}%")
+                monitoring = settings.get("monitoring", False)
+                self.battery_monitor.set_config(chat_id, threshold, monitoring)
+                logger.info(f"Загружены настройки: порог={threshold}%, мониторинг={'вкл' if monitoring else 'выкл'}")
         except Exception as e:
             logger.error(f"Ошибка загрузки настроек: {e}")
 
@@ -117,22 +118,25 @@ class Plugin:
             settings = _read_settings_file()
             threshold = min(THRESHOLD_MAX, max(THRESHOLD_MIN, settings.get("threshold", 20)))
             lang = settings.get("language", "ru")  # По умолчанию русский
+            monitoring = settings.get("monitoring", False)
             if lang not in ("en", "ru"):
                 lang = "ru"
             return {
                 "chat_id": settings.get("chat_id", "") or "",
                 "threshold": threshold,
                 "language": lang,
+                "monitoring": monitoring,
             }
         except Exception as e:
             logger.error(f"Ошибка чтения конфигурации: {e}")
-            return {"chat_id": "", "threshold": 20, "language": "ru"}
+            return {"chat_id": "", "threshold": 20, "language": "ru", "monitoring": False}
 
     async def save_config(
         self,
         chat_id: Optional[str] = None,
         threshold: Optional[int] = None,
         language: Optional[str] = None,
+        monitoring: Optional[bool] = None,
         **kwargs: Any,
     ) -> bool:
         """Сохранить настройки"""
@@ -143,12 +147,14 @@ class Plugin:
                 chat_id = str(data.get("chat_id", "") or "")
                 threshold = data.get("threshold", 20)
                 language = str(data.get("language", "ru") or "ru")
+                monitoring = data.get("monitoring", None)
             elif isinstance(chat_id, str) and chat_id.strip().startswith("{"):
                 try:
                     data = json.loads(chat_id)
                     chat_id = str(data.get("chat_id", "") or "")
                     threshold = data.get("threshold", 20)
                     language = str(data.get("language", "ru") or "ru")
+                    monitoring = data.get("monitoring", None)
                 except json.JSONDecodeError:
                     pass
             
@@ -163,19 +169,26 @@ class Plugin:
             threshold = min(THRESHOLD_MAX, max(THRESHOLD_MIN, int(threshold)))
             lang = language if language in ("en", "ru") else "ru"
 
+            # Если monitoring передан - используем его, иначе берем текущее из объекта
+            if monitoring is not None:
+                new_monitoring_state = bool(monitoring)
+            else:
+                new_monitoring_state = self.battery_monitor.monitoring if hasattr(self, 'battery_monitor') else False
+
             if hasattr(self, 'battery_monitor'):
-                self.battery_monitor.set_config(chat_id, threshold)
+                self.battery_monitor.set_config(chat_id, threshold, new_monitoring_state)
             
             settings = {
                 "chat_id": chat_id,
                 "threshold": threshold,
                 "language": lang,
+                "monitoring": new_monitoring_state,
             }
             _write_settings_file(settings)
             
             # Маскируем chat_id для логов
             masked_chat_id = chat_id[:8] + "..." if len(chat_id) > 8 else chat_id or "(пусто)"
-            logger.info(f"Конфигурация сохранена: chat_id={masked_chat_id}, порог={threshold}%, язык={lang}")
+            logger.info(f"Конфигурация сохранена: chat_id={masked_chat_id}, порог={threshold}%, язык={lang}, мониторинг={'вкл' if new_monitoring_state else 'выкл'}")
             return True
         except Exception as e:
             logger.error(f"Ошибка сохранения конфигурации: {e}")

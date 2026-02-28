@@ -32,6 +32,7 @@ interface ConfigResponse {
   chat_id: string;
   threshold: number;
   language?: string;
+  monitoring: boolean;
 }
 
 // Русские тексты
@@ -101,6 +102,7 @@ function BatteryTelegramPanel() {
         if (typeof cfg === 'object') {
           setChatId(String(cfg.chat_id ?? ''));
           setThreshold(Math.max(THRESHOLD_MIN, Math.min(THRESHOLD_MAX, Number(cfg.threshold) ?? 20)));
+          setIsMonitoring(Boolean(cfg.monitoring));
         }
       } catch (e) {
         console.error('BatteryGram: load config failed', e);
@@ -127,9 +129,9 @@ function BatteryTelegramPanel() {
     try {
       let success = false;
       try {
-        success = await call<[{ chat_id: string; threshold: number; language: string }], boolean>(
+        success = await call<[{ chat_id: string; threshold: number; language: string; monitoring: boolean }], boolean>(
           'save_config',
-          { chat_id: chatId.trim(), threshold, language: 'ru' }
+          { chat_id: chatId.trim(), threshold, language: 'ru', monitoring: isMonitoring  }
         );
       } catch (_) {
         success = await call<[string, number, string], boolean>(
