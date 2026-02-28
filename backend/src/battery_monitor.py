@@ -227,7 +227,7 @@ class BatteryMonitor:
 
                     # Отслеживаем изменение состояния зарядки
                     if self.last_charging_state is not None and charging != self.last_charging_state:
-                        status = "подключено 🔌" if charging else "отключено ⚡"
+                        status = "<b>Steam Deck</b> подключено 🔌" if charging else "отключено ⚡"
                         self.send_telegram(f"🔋 Питание {status}")
                     
                         # Если зарядка отключена, сбрасываем уведомления о полном заряде
